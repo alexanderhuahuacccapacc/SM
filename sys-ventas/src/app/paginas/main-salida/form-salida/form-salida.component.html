@@ -1,0 +1,90 @@
+<div class="formulario-contenedor">
+  <div class="formulario-titulo">
+    {{ isEdit ? '✏️ Editar Salida' : '📤 Registrar Salida' }}
+  </div>
+
+
+  <form [formGroup]="form" (ngSubmit)="guardar()" class="formulario-cuerpo">
+      <input type="hidden" formControlName="id" />
+      <input type="hidden" formControlName="nombreRepuesto" />
+    <mat-form-field appearance="fill">
+      <mat-label>Repuesto</mat-label>
+      <input
+        type="text"
+        matInput
+        formControlName="nombreRepuesto"
+        [matAutocomplete]="auto"
+        required
+      />
+
+      <mat-autocomplete #auto="matAutocomplete" (optionSelected)="seleccionarRepuesto($event.option.value)">
+        <mat-option *ngFor="let r of repuestosFiltrados" [value]="r.nombre">
+          {{ r.nombre }} (Stock: {{ r.stockActual }})
+        </mat-option>
+      </mat-autocomplete>
+
+      <mat-error *ngIf="form.get('nombreRepuesto')?.hasError('required')">
+        Selecciona un repuesto
+      </mat-error>
+    </mat-form-field>
+
+      <!-- Cantidad -->
+      <mat-form-field appearance="fill">
+        <mat-label>Cantidad Entregada</mat-label>
+        <input matInput type="number" formControlName="cantidadEntregada" required />
+        <mat-error *ngIf="form.get('cantidadEntregada')?.hasError('required')">
+          Ingrese una cantidad
+        </mat-error>
+        <mat-error *ngIf="form.get('cantidadEntregada')?.hasError('stockInsuficiente')">
+          No hay suficiente stock disponible
+        </mat-error>
+        <mat-error *ngIf="form.get('cantidadEntregada')?.hasError('min')">
+          La cantidad mínima es 1
+        </mat-error>
+      </mat-form-field>
+
+      <!-- Destinatario -->
+      <mat-form-field appearance="fill">
+        <mat-label>Destinatario</mat-label>
+        <input matInput formControlName="destinatario" required />
+        <mat-error *ngIf="form.get('destinatario')?.hasError('required')">
+          Ingrese un destinatario
+        </mat-error>
+      </mat-form-field>
+
+      <!-- Código -->
+      <mat-form-field appearance="fill">
+        <mat-label>Código</mat-label>
+        <input matInput formControlName="codigo" />
+      </mat-form-field>
+
+      <!-- Fecha -->
+      <mat-form-field appearance="fill">
+        <mat-label>Fecha de Salida</mat-label>
+        <input matInput [matDatepicker]="picker" formControlName="fechaSalida" required />
+        <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+        <mat-datepicker #picker></mat-datepicker>
+        <mat-error *ngIf="form.get('fechaSalida')?.hasError('required')">
+          Selecciona una fecha
+        </mat-error>
+      </mat-form-field>
+        <!-- Estado -->
+        <mat-form-field appearance="fill">
+          <mat-label>Estado</mat-label>
+          <mat-select formControlName="estado" required>
+            <mat-option value="Pendiente">Pendiente</mat-option>
+            <mat-option value="Entregado">Entregado</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+    <!-- Botones -->
+    <div class="botones-contenedor">
+      <button mat-raised-button color="primary" type="submit" [disabled]="form.invalid">
+        {{ isEdit ? 'Actualizar' : 'Guardar' }}
+      </button>
+      <button mat-raised-button color="warn" type="button" (click)="cancelar()">
+        Cancelar
+      </button>
+    </div>
+  </form>
+</div>

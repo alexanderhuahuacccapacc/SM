@@ -1,0 +1,43 @@
+.formulario-repuesto-card {
+  max-width: 850px;
+  margin: 2rem auto;
+  padding: 2rem;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+  background: #ffffffee;
+  backdrop-filter: blur(6px);
+}
+
+.formulario-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+
+.campo-completo {
+  width: 100%;
+}
+
+.campo-doble, .campo-triple {
+  display: grid;
+  gap: 1rem;
+}
+
+.campo-doble {
+  grid-template-columns: 1fr 1fr;
+}
+
+.campo-triple {
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.botones-formulario {
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+  margin-top: 1rem;
+}
+
+button[mat-flat-button], button[mat-stroked-button] {
+  min-width: 120px;
+}

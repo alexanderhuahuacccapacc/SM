@@ -1,0 +1,82 @@
+<router-outlet />
+
+<div class="container">
+  <h1 class="title">
+    <mat-icon class="icono">inventory_2</mat-icon>
+    Registro de Repuestos
+  </h1>
+
+  <div class="filter-container">
+    <mat-form-field appearance="outline">
+      <mat-label>Buscar repuesto</mat-label>
+      <input matInput (keyup)="applyFilter($event)" #input>
+      <mat-icon matSuffix>search</mat-icon>
+    </mat-form-field>
+  </div>
+
+  <div class="mat-elevation-z8 table-wrapper">
+    <table mat-table [dataSource]="dataSource" matSort class="custom-table">
+
+      <!-- Nombre -->
+      <ng-container matColumnDef="nombre">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Nombre</th>
+        <td mat-cell *matCellDef="let row">{{row.nombre}}</td>
+      </ng-container>
+
+      <!-- Stock -->
+      <!-- Stock -->
+      <ng-container matColumnDef="stockActual">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Stock</th>
+        <td mat-cell *matCellDef="let row">
+          <span
+            class="stock-badge"
+            [ngClass]="{
+              'stock-badge-bajo': row.stockActual < 5,
+              'stock-badge-normal': row.stockActual >= 5
+            }">
+            {{ row.stockActual }}
+          </span>
+        </td>
+      </ng-container>
+
+
+      <!-- Categoría -->
+      <ng-container matColumnDef="categoria">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Categoría</th>
+        <td mat-cell *matCellDef="let row">{{row.categoria.nombre}}</td>
+      </ng-container>
+
+      <!-- Acciones -->
+      <ng-container matColumnDef="acciones">
+        <th mat-header-cell *matHeaderCellDef>Acciones</th>
+        <td mat-cell *matCellDef="let row">
+          <div class="acciones">
+            <button mat-icon-button [routerLink]="['edit', row.idRepuesto]" color="primary">
+              <mat-icon>edit</mat-icon>
+            </button>
+            <button mat-icon-button (click)="eliminar(row.idRepuesto)" color="warning"  class="btn-eliminar">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </div>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="getDisplayedColumns()"></tr>
+      <tr mat-row *matRowDef="let row; columns: getDisplayedColumns();"></tr>
+
+      <!-- Sin datos -->
+      <tr class="mat-row" *matNoDataRow>
+        <td class="mat-cell" colspan="4">No hay resultados para "{{input.value}}"</td>
+      </tr>
+    </table>
+
+    <mat-paginator [pageSizeOptions]="[5, 10, 200]" [length]="totalElements" (page)="showMore($event)">
+    </mat-paginator>
+  </div>
+
+  <button mat-fab color="accent" class="fab-button" routerLink="/pages/repuestos/new">
+    <mat-icon>add</mat-icon>
+  </button>
+</div>
+
+

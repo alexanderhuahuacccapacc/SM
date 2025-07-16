@@ -1,0 +1,109 @@
+<div class="table-container">
+  <div class="header-row">
+    <h2>Gestión de Solicitudes de Repuestos</h2>
+
+    <div class="filter-container">
+      <mat-form-field appearance="outline" floatLabel="always">
+        <mat-label>Filtrar</mat-label>
+        <input matInput (keyup)="applyFilter($event)" placeholder="Ej: Aceite, Pendiente...">
+        <mat-icon matSuffix>search</mat-icon>
+      </mat-form-field>
+    </div>
+  </div>
+  <div class="table-responsive">
+    <table mat-table [dataSource]="dataSource" matSort class="full-width-table">
+      <!-- Columnas dinámicas basadas en columnsDefinitions -->
+      <ng-container *ngFor="let column of columnsDefinitions">
+        <ng-container [matColumnDef]="column.def">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>
+            {{ column.label }}
+          </th>
+          <td mat-cell *matCellDef="let solicitud">
+            <ng-container [ngSwitch]="column.def">
+
+              <!-- Campo ID -->
+              <ng-container *ngSwitchCase="'idSolicitudRepuesto'">
+                {{ solicitud.idSolicitudRepuesto }}
+              </ng-container>
+
+              <!-- Fecha -->
+              <ng-container *ngSwitchCase="'fecha'">
+                {{ solicitud.fecha | date:'yyyy-MM-dd' }}
+              </ng-container>
+
+              <!-- Cantidad -->
+              <ng-container *ngSwitchCase="'cantidad'">
+                {{ solicitud.cantidad }}
+              </ng-container>
+
+              <!-- Motivo -->
+              <ng-container *ngSwitchCase="'motivo'">
+                {{ solicitud.motivo }}
+              </ng-container>
+
+              <!-- Bus: placaBus -->
+              <ng-container *ngSwitchCase="'Busplaca'">
+                {{ solicitud.placa }}
+              </ng-container>
+
+              <!-- Repuesto: nombreRepuesto -->
+              <ng-container *ngSwitchCase="'nombreRepuesto'">
+                {{ solicitud.nombre }}
+              </ng-container>
+
+
+              <!-- Estado con estilo -->
+              <ng-container *ngSwitchCase="'estado'">
+                <mat-chip [ngClass]="{
+            'mat-primary': solicitud.estado === 'Aprobado',
+            'mat-accent': solicitud.estado === 'Pendiente',
+            'mat-warn': solicitud.estado === 'Rechazado'
+          }">
+                  {{ solicitud.estado }}
+                </mat-chip>
+              </ng-container>
+
+              <!-- Acciones -->
+              <ng-container *ngSwitchCase="'acciones'">
+                <button mat-icon-button color="primary"
+                        (click)="openEditDialog(solicitud)">
+                  <mat-icon>edit</mat-icon>
+                </button>
+                <button mat-icon-button color="primary" *ngIf="solicitud.estado === 'Pendiente'"
+                        (click)="cambiarEstado(solicitud.id_SolicitudRepuesto, 'Aprobado')">
+                  <mat-icon>check_circle</mat-icon>
+                </button>
+                <button mat-icon-button color="warn" *ngIf="solicitud.estado === 'Pendiente'"
+                        (click)="cambiarEstado(solicitud.id_SolicitudRepuesto, 'Rechazado')">
+                  <mat-icon>cancel</mat-icon>
+                </button>
+              </ng-container>
+
+              <!-- Por defecto -->
+              <ng-container *ngSwitchDefault>
+                {{ solicitud[column.def] }}
+              </ng-container>
+
+            </ng-container>
+          </td>
+        </ng-container>
+      </ng-container>
+
+
+      <tr mat-header-row *matHeaderRowDef="getDisplayedColumns()"></tr>
+      <tr mat-row *matRowDef="let row; columns: getDisplayedColumns();"></tr>
+
+      <tr class="mat-row" *matNoDataRow>
+        <td class="mat-cell" colspan="getDisplayedColumns().length">
+          No se encontraron solicitudes {{dataSource.filter ? 'que coincidan con el filtro' : ''}}
+        </td>
+      </tr>
+    </table>
+  </div>
+
+  <mat-paginator [length]="totalElements" [pageSizeOptions]="[5, 10, 25]" (page)="showMore($event)"></mat-paginator>
+
+  <button mat-fab color="primary" class="add-button" (click)="openCreateDialog()">
+    <mat-icon>add</mat-icon>
+  </button>
+</div>

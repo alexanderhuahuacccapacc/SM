@@ -1,0 +1,30 @@
+<form  [formGroup]="form"
+       class="example-container" (submit)="operate()"
+       #frmMarca="ngForm" >
+<div [hidden]="true" >
+  <mat-form-field>
+    <input matInput placeholder="ID" formControlName="idMarca" >
+  </mat-form-field>
+</div>
+
+  <mat-form-field>
+    <input matInput placeholder="Nombre" formControlName="nombre" >
+    @if (f['nombre'].errors?.['required'] && f['nombre'].touched){
+      <small class="invalid">Es requerido</small>
+    }
+    @if (f['nombre'].errors?.['minlength'] && f['nombre'].touched){
+      <small class="invalid">Caracter minimo requerido es 3</small>
+    }
+  </mat-form-field>
+
+  <button mat-button type="submit" [disabled]="frmMarca.invalid">
+    <mat-icon>done</mat-icon>
+    <span>Guardar</span>
+  </button>
+
+  <button mat-button type="button" routerLink="/pages/marca" >
+    <mat-icon>cancel</mat-icon>
+    <span>Cancelar</span>
+  </button>
+
+</form>

@@ -1,0 +1,29 @@
+.component-container {
+  padding: 20px;
+
+  .component-title {
+    margin-bottom: 20px;
+    color: #3f51b5;
+    font-weight: 500;
+  }
+
+  .table-container {
+    margin-bottom: 20px;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .full-width-table {
+    width: 100%;
+  }
+
+  .actions-container {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 16px;
+
+    button {
+      margin-left: 8px;
+    }
+  }
+}

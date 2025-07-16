@@ -1,0 +1,53 @@
+<h2>Registrar Nueva Solicitud</h2>
+
+<form [formGroup]="solicitudForm" (ngSubmit)="onSubmit()">
+  <mat-form-field appearance="outline">
+    <input matInput placeholder="Fecha" formControlName="fecha" type="date">
+  </mat-form-field>
+
+
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>Cantidad</mat-label>
+    <input matInput formControlName="cantidad" type="number" min="1">
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>Motivo</mat-label>
+    <textarea matInput formControlName="motivo" rows="3"></textarea>
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>Estado</mat-label>
+    <mat-select formControlName="estado">
+      <mat-option value="Pendiente">Pendiente</mat-option>
+      <mat-option value="Aprobado">Aprobado</mat-option>
+      <mat-option value="Rechazado">Rechazado</mat-option>
+    </mat-select>
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>Usuario</mat-label>
+    <mat-select formControlName="usuarioId">
+      <mat-option [value]="1">Juan Pérez</mat-option>
+      <mat-option [value]="2">Ana Gómez</mat-option>
+    </mat-select>
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>Repuesto</mat-label>
+    <mat-select formControlName="repuestoId">
+      <mat-option [value]="1">Freno</mat-option>
+      <mat-option [value]="2">Aceite</mat-option>
+    </mat-select>
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>Bus</mat-label>
+    <mat-select formControlName="busId">
+      <mat-option [value]="1">Bus 001 - NN-528</mat-option>
+      <mat-option [value]="2">Bus 002 - XC-345</mat-option>
+    </mat-select>
+  </mat-form-field>
+
+  <button mat-raised-button color="primary" type="submit" [disabled]="!solicitudForm.valid">Guardar Solicitud</button>
+</form>

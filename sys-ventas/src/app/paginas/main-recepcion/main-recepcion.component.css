@@ -1,0 +1,116 @@
+
+.contenedor-recepcion {
+  padding: 2rem;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  min-height: 100vh;
+}
+
+
+.titulo-toolbar {
+  font-size: 26px;
+  font-weight: 600;
+  background: linear-gradient(to right, #3f51b5, #5c6bc0);
+  color: white;
+  border-radius: 12px;
+  padding: 1rem 1.5rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+
+.campo-busqueda {
+  width: 100%;
+  margin-bottom: 1.5rem;
+}
+
+
+.tabla-contenedor {
+  overflow-x: auto;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(10px);
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+}
+
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+
+tr.mat-row:nth-child(even) {
+  background-color: rgba(240,240,240,0.6);
+}
+
+
+th.mat-header-cell {
+  font-weight: 600;
+  color: #333;
+}
+
+
+.estado-pendiente {
+  background-color: #ffeb3b !important;
+  color: #333 !important;
+  font-weight: 600;
+}
+
+.estado-validado {
+  background-color: #4caf50 !important;
+  color: white !important;
+  font-weight: 600;
+}
+
+
+button[mat-icon-button] {
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  margin-right: 6px;
+}
+
+button[mat-icon-button]:hover {
+  background-color: rgba(63,81,181,0.1);
+  border-radius: 50%;
+  transform: scale(1.1);
+}
+
+
+.mat-tooltip {
+  font-size: 13px;
+}
+
+
+mat-paginator {
+  margin-top: 1rem;
+  background: transparent;
+}
+
+
+@media (max-width: 768px) {
+  .titulo-toolbar {
+    font-size: 22px;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .campo-busqueda {
+    margin-bottom: 1rem;
+  }
+
+  .tabla-contenedor {
+    padding: 0.8rem;
+  }
+}
+
+
+@keyframes fadeIn {
+  0% { opacity: 0; transform: translateY(20px);}
+  100% { opacity: 1; transform: translateY(0);}
+}
+
+.tabla-contenedor {
+  animation: fadeIn 0.5s ease;
+}
+
+

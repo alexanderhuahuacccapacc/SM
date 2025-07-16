@@ -1,0 +1,114 @@
+<mat-card class="formulario-repuesto-card">
+  <mat-card-header>
+    <mat-card-title>Registrar Repuesto</mat-card-title>
+  </mat-card-header>
+
+  <mat-card-content>
+    <form [formGroup]="repuestForm" (ngSubmit)="operar()" class="formulario-grid">
+
+
+      <mat-form-field appearance="fill" class="campo-completo">
+        <mat-label>Nombre del Producto</mat-label>
+        <input matInput formControlName="nombre" placeholder="Nombre" />
+        <mat-error *ngIf="repuestForm.get('nombre')?.invalid && repuestForm.get('nombre')?.touched">
+          Este campo es requerido
+        </mat-error>
+      </mat-form-field>
+
+
+      <div class="campo-doble">
+        <mat-form-field appearance="fill">
+          <mat-label>Stock Actual</mat-label>
+          <input matInput formControlName="stockActual" type="number" placeholder="Stock actual" />
+          <mat-error *ngIf="repuestForm.get('stockActual')?.invalid && repuestForm.get('stockActual')?.touched">
+            Campo requerido
+          </mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="fill">
+          <mat-label>Stock Mínimo</mat-label>
+          <input matInput formControlName="stockMinimo" type="number" placeholder="Nuevo stock mínimo" />
+          <mat-error *ngIf="repuestForm.get('stockMinimo')?.invalid && repuestForm.get('stockMinimo')?.touched">
+            Campo requerido
+          </mat-error>
+        </mat-form-field>
+      </div>
+
+
+      <div class="campo-doble">
+        <mat-form-field appearance="fill">
+          <mat-label>Código</mat-label>
+          <input matInput formControlName="codigo" placeholder="Código del producto" />
+          <mat-error *ngIf="repuestForm.get('codigo')?.invalid && repuestForm.get('codigo')?.touched">
+            Campo requerido
+          </mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="fill">
+          <mat-label>Ubicación</mat-label>
+          <input matInput formControlName="ubicacion" placeholder="Ubicación física" />
+          <mat-error *ngIf="repuestForm.get('ubicacion')?.invalid && repuestForm.get('ubicacion')?.touched">
+            Campo requerido
+          </mat-error>
+        </mat-form-field>
+      </div>
+
+
+      <mat-form-field appearance="fill" class="campo-completo">
+        <mat-label>Estado</mat-label>
+        <mat-select formControlName="estado">
+          <mat-option value="ACTIVO">Activo</mat-option>
+          <mat-option value="INACTIVO">Inactivo</mat-option>
+        </mat-select>
+        <mat-error *ngIf="repuestForm.get('estado')?.invalid && repuestForm.get('estado')?.touched">
+          Campo requerido
+        </mat-error>
+      </mat-form-field>
+
+
+      <div class="campo-triple">
+        <mat-form-field appearance="fill">
+          <mat-label>Categoría</mat-label>
+          <mat-select formControlName="categoria">
+            <mat-option *ngFor="let categoria of categorias" [value]="categoria.idCategoria">
+              {{ categoria.nombre }}
+            </mat-option>
+          </mat-select>
+          <mat-error *ngIf="repuestForm.get('categoria')?.invalid && repuestForm.get('categoria')?.touched">
+            Campo requerido
+          </mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="fill">
+          <mat-label>Marca</mat-label>
+          <mat-select formControlName="marca">
+            <mat-option *ngFor="let marca of marcas" [value]="marca.idMarca">
+              {{ marca.nombre }}
+            </mat-option>
+          </mat-select>
+          <mat-error *ngIf="repuestForm.get('marca')?.invalid && repuestForm.get('marca')?.touched">
+            Campo requerido
+          </mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="fill">
+          <mat-label>Unidad de Medida</mat-label>
+          <mat-select formControlName="unidadMedida">
+            @for (um of unidadMedidas$ | async; track $index) {
+              <mat-option [value]="um.idUnidad">{{ um.nombreMedida }}</mat-option>
+            }
+          </mat-select>
+          <mat-error *ngIf="repuestForm.get('unidadMedida')?.invalid && repuestForm.get('unidadMedida')?.touched">
+            Campo requerido
+          </mat-error>
+        </mat-form-field>
+      </div>
+
+
+      <div class="botones-formulario">
+        <button mat-flat-button color="primary" type="submit" [disabled]="repuestForm.invalid">Guardar</button>
+        <button mat-stroked-button color="warn" type="button" routerLink="/pages/repuestos">Cancelar</button>
+      </div>
+    </form>
+  </mat-card-content>
+</mat-card>
