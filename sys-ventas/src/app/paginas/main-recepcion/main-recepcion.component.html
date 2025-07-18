@@ -82,7 +82,7 @@
               color="primary"
               (click)="validar(row.id)"
               matTooltip="Validar"
-              *ngIf="row.estado === 'PENDIENTE'"
+              *ngIf="row.estado === 'RECIBIDO'"
             >
               <mat-icon>check_circle</mat-icon>
             </button>
@@ -92,7 +92,7 @@
               mat-icon-button
               color="accent"
               (click)="enviarASalida(row)"
-              [disabled]="row.estado === 'ENTREGADO'"
+              [disabled]="row.estado === 'PENDIENTE'"
               matTooltip="Enviar a salida"
             >
               <mat-icon>send</mat-icon>
@@ -109,7 +109,7 @@
         <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
       </table>
 
-      <mat-paginator [pageSizeOptions]="[5, 10, 25]" showFirstLastButtons></mat-paginator>
+      <mat-paginator [pageSizeOptions]="[20, 100]" showFirstLastButtons></mat-paginator>
     </div>
   </mat-card>
   <button mat-fab color="accent" class="fab-button" routerLink="/pages/recepcion/new">

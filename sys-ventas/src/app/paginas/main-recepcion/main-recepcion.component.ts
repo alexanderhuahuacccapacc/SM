@@ -72,6 +72,11 @@ export class MainRecepcionComponent implements OnInit {
       this.repuestos = reps;
       this.listarRecepciones();
     });
+    this.recepcionService.getRecepcionChange().subscribe(data => {
+      this.dataSource.data = data;
+      this.dataSource.paginator = this.paginator;
+      this.dataSource.sort = this.sort;
+    });
   }
 
   listarRecepciones() {
@@ -115,6 +120,11 @@ export class MainRecepcionComponent implements OnInit {
     };
 
     this.salidaService.guardar(nuevaSalida).subscribe(() => {
+      // ⚠️ QUITAR ESTE INCREMENTO AQUÍ
+      // this.repuestoService.incrementarStock(row.idRepuesto!, row.cantidadRecibida).subscribe(() => {
+      //   this.repuestoService.setMessageChange('Stock actualizado correctamente');
+      // });
+
       this.recepcionService.delete(row.id!).subscribe(() => {
         this.listarRecepciones();
 

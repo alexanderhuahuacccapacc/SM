@@ -17,7 +17,6 @@ public interface RecepcionMapper {
 
     @Mappings({
             @Mapping(source = "repuesto.idRepuesto", target = "idRepuesto"),
-            @Mapping(source = "repuesto.nombre", target = "nombreRepuesto")
     })
     RecepcionDTO toDto(Recepcion entity);
 

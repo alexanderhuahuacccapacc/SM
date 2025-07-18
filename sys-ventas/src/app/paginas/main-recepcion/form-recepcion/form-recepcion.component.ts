@@ -10,10 +10,12 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Recepcion } from '../../../modelo/Recepcion';
 import { RecepcionService } from '../../../servicio/recepcion.service';
 import { RepuestoService } from '../../../servicio/repuesto.service';
-import { switchMap } from 'rxjs';
+import { switchMap, map, startWith } from 'rxjs/operators';
+import { Observable } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { MaterialModule } from '../../../material/material.module';
 import { MatDatepicker, MatDatepickerInput, MatDatepickerToggle } from '@angular/material/datepicker';
+import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { Repuesto } from '../../../modelo/Repuesto';
 import {provideNativeDateAdapter} from '@angular/material/core';
 
@@ -27,7 +29,8 @@ import {provideNativeDateAdapter} from '@angular/material/core';
     ReactiveFormsModule,
     MatDatepickerInput,
     MatDatepickerToggle,
-    MatDatepicker
+    MatDatepicker,
+    MatAutocompleteModule
   ],
   providers: [provideNativeDateAdapter()],
   templateUrl: './form-recepcion.component.html',
@@ -39,7 +42,8 @@ export class FormRecepcionComponent implements OnInit {
   id!: number;
 
   repuestos: Repuesto[] = [];
-
+  filteredRepuestos!: Observable<Repuesto[]>;
+  repuestoControl = new FormControl('', [Validators.required]);
 
   @Output() formularioCerrado = new EventEmitter<void>();
 
@@ -55,6 +59,7 @@ export class FormRecepcionComponent implements OnInit {
     this.form = new FormGroup({
       id: new FormControl(null),
       repuesto: new FormControl(null, [Validators.required]),
+      repuestoNombre: this.repuestoControl,
       cantidadRecibida: new FormControl(0, [Validators.required]),
       proveedor: new FormControl('', [Validators.required]),
       codigo: new FormControl('', [Validators.required]),
@@ -64,6 +69,11 @@ export class FormRecepcionComponent implements OnInit {
 
     this.repuestoService.findAll().subscribe((data: Repuesto[]) => {
       this.repuestos = data;
+
+      this.filteredRepuestos = this.repuestoControl.valueChanges.pipe(
+        startWith(''),
+        map(value => this._filterRepuestos(value || ''))
+      );
     });
 
     this.route.params.subscribe(params => {
@@ -78,12 +88,33 @@ export class FormRecepcionComponent implements OnInit {
     });
   }
 
+  private _filterRepuestos(value: string): Repuesto[] {
+    const filterValue = typeof value === 'string' ? value.toLowerCase() : '';
+    return this.repuestos
+      .filter(repuesto => repuesto.nombre.toLowerCase().includes(filterValue))
+      .sort((a, b) => a.nombre.localeCompare(b.nombre));
+  }
+
+  seleccionarRepuesto(repuesto: Repuesto): void {
+    this.form.patchValue({
+      repuesto: repuesto.idRepuesto,
+      repuestoNombre: repuesto.nombre
+    });
+  }
+
+  displayRepuesto(repuesto?: Repuesto): string {
+    return repuesto ? `${repuesto.nombre} (Stock: ${repuesto.stockActual})` : '';
+  }
+
   initForm() {
     this.recepcionService.findById(this.id).subscribe({
       next: (data: Recepcion) => {
+        const repuestoSeleccionado = this.repuestos.find(r => r.idRepuesto === data.idRepuesto);
+
         this.form.setValue({
           id: data.id,
-          repuesto: data.idRepuesto, // Asegúrate que esto coincide con el valor esperado
+          repuesto: data.idRepuesto,
+          repuestoNombre: repuestoSeleccionado ? this.displayRepuesto(repuestoSeleccionado) : '',
           cantidadRecibida: data.cantidadRecibida,
           proveedor: data.proveedor,
           codigo: data.codigo,
@@ -93,7 +124,6 @@ export class FormRecepcionComponent implements OnInit {
       },
       error: (err) => {
         console.error('Error al cargar recepción:', err);
-        // Puedes redirigir o mostrar un mensaje al usuario
       }
     });
   }
@@ -101,33 +131,30 @@ export class FormRecepcionComponent implements OnInit {
   operate() {
     const recepcion: Recepcion = {
       ...this.form.value,
-      idRepuesto:this.form.value.repuesto
+      idRepuesto: this.form.value.repuesto,
+      fechaRecepcion: this.form.value.fechaRecepcion.toISOString().split('T')[0]
     };
 
-    if (this.isEdit) {
-      this.recepcionService.update(this.id, recepcion).pipe(
-        switchMap(() => this.recepcionService.findAll())
-      ).subscribe((data: Recepcion[]) => {
+    const operation = this.isEdit
+      ? this.recepcionService.update(this.id, recepcion)
+      : this.recepcionService.save(recepcion);
+
+    operation.pipe(
+      switchMap(() => this.recepcionService.findAll())
+    ).subscribe({
+      next: (data: Recepcion[]) => {
         this.recepcionService.setRecepcionChange(data);
-        this.recepcionService.setMessageChange('Actualizado correctamente');
+        this.recepcionService.setMessageChange(this.isEdit ? 'Actualizado correctamente' : 'Creado correctamente');
         this.formularioCerrado.emit();
         this.router.navigate(['/pages/recepcion']);
-      });
-    } else {
-      this.recepcionService.save(recepcion).pipe(
-        switchMap(() => this.recepcionService.findAll())
-      ).subscribe((data: Recepcion[]) => {
-        this.recepcionService.setRecepcionChange(data);
-        this.recepcionService.setMessageChange('Creado correctamente');
-        this.formularioCerrado.emit();
-        this.router.navigate(['/pages/recepcion']);
-      });
-    }
+      },
+      error: (err) => {
+        console.error('Error en la operación:', err);
+      }
+    });
   }
 
   get f() {
     return this.form.controls;
   }
 }
-
-

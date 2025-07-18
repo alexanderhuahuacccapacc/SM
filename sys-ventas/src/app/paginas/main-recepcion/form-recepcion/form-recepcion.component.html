@@ -6,12 +6,19 @@
 
   <mat-form-field appearance="fill">
     <mat-label>Repuesto</mat-label>
-    <mat-select formControlName="repuesto">
-      <mat-option *ngFor="let r of repuestos" [value]="r.idRepuesto">
-        {{ r.nombre }}
+    <input
+      type="text"
+      matInput
+      formControlName="repuestoNombre"
+      [matAutocomplete]="auto"
+      required
+    />
+    <mat-autocomplete #auto="matAutocomplete" (optionSelected)="seleccionarRepuesto($event.option.value)">
+      <mat-option *ngFor="let r of filteredRepuestos | async" [value]="r">
+        {{ r.nombre }} (Stock: {{ r.stockActual }})
       </mat-option>
-    </mat-select>
-    <mat-error *ngIf="f['repuesto'].touched && f['repuesto'].hasError('required')">
+    </mat-autocomplete>
+    <mat-error *ngIf="f['repuestoNombre'].touched && f['repuestoNombre'].hasError('required')">
       Repuesto es requerido
     </mat-error>
   </mat-form-field>
@@ -52,10 +59,10 @@
 
   <mat-form-field appearance="fill">
     <mat-label>Estado</mat-label>
-    <input matInput formControlName="estado" />
-    <mat-error *ngIf="f['estado'].touched && f['estado'].hasError('required')">
-      Estado es requerido
-    </mat-error>
+    <mat-select formControlName="estado" required>
+      <mat-option value="VALIDADA">VALIDADA</mat-option>
+      <mat-option value="Recibido">Recibido</mat-option>
+    </mat-select>
   </mat-form-field>
 
   <div style="text-align: right;">

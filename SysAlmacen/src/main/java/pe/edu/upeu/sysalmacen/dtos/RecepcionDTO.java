@@ -31,6 +31,4 @@ public class RecepcionDTO {
     @NotBlank(message = "El estado no puede estar vacío")
     private String estado;
 
-    @NotBlank(message = "El estado no puede estar vacío")
-    private String nombreRepuesto;
 }

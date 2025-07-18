@@ -7,6 +7,7 @@ import pe.edu.upeu.sysalmacen.dtos.RecepcionDTO;
 import pe.edu.upeu.sysalmacen.mappers.RecepcionMapper;
 import pe.edu.upeu.sysalmacen.model.Recepcion;
 import pe.edu.upeu.sysalmacen.service.RecepcionService;
+import pe.edu.upeu.sysalmacen.service.impl.RepuestoServiceImp;
 
 import java.util.List;
 
@@ -16,6 +17,7 @@ import java.util.List;
 public class RecepcionController {
 
     private final RecepcionService recepcionService;
+    private final RepuestoServiceImp repuestoService;
 
     @GetMapping
     public ResponseEntity<List<RecepcionDTO>> getRecepciones() {
@@ -28,14 +30,15 @@ public class RecepcionController {
     }
 
     @PostMapping
-    public ResponseEntity<RecepcionDTO> create(@RequestBody RecepcionDTO dto) {
+    public ResponseEntity<RecepcionDTO> guardarRecepcion(@RequestBody RecepcionDTO dto) {
         return ResponseEntity.ok(recepcionService.guardarRecepcion(dto));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<RecepcionDTO> update(@PathVariable Long id, @RequestBody RecepcionDTO dto) {
+    public ResponseEntity<RecepcionDTO> actualizarRecepcion(@PathVariable Long id, @RequestBody RecepcionDTO dto) {
         return ResponseEntity.ok(recepcionService.actualizarRecepcion(id, dto));
     }
+
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
@@ -45,9 +48,14 @@ public class RecepcionController {
 
     @PutMapping("/{id}/validar")
     public ResponseEntity<Void> validar(@PathVariable Long id) {
+        RecepcionDTO recepcion = recepcionService.obtenerPorId(id);
         recepcionService.validarRecepcion(id);
+
+        // Incrementar stock al validar la recepción
+        repuestoService.incrementarStock(recepcion.getIdRepuesto(), recepcion.getCantidadRecibida());
+
         return ResponseEntity.noContent().build();
     }
 }
-
+//CONTROLLER_PUT ARREGLAR
 

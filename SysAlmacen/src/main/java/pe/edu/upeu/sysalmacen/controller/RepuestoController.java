@@ -7,10 +7,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+import pe.edu.upeu.sysalmacen.dtos.IncrementoStockRequest;
 import pe.edu.upeu.sysalmacen.dtos.RepuestoDTO;
 import pe.edu.upeu.sysalmacen.mappers.RepuestoMapper;
 import pe.edu.upeu.sysalmacen.model.Repuesto;
 import pe.edu.upeu.sysalmacen.service.IRepuestoService;
+import pe.edu.upeu.sysalmacen.service.impl.RepuestoServiceImp;
 
 import java.net.URI;
 import java.util.List;
@@ -23,6 +25,7 @@ import java.util.List;
 
 public class RepuestoController {
 
+    private final RepuestoServiceImp respuestoServiceiImp;
     private final IRepuestoService repuestoService ;
     private final RepuestoMapper repuestoMapper;
 
@@ -61,6 +64,12 @@ public class RepuestoController {
     public ResponseEntity<org.springframework.data.domain.Page<RepuestoDTO>> listPage(Pageable pageable){
         Page<RepuestoDTO> page = repuestoService.listaPage(pageable).map(e -> repuestoMapper.toDTO(e));
         return ResponseEntity.ok(page);
+    }
+    @PutMapping("/incrementar-stock")
+    public ResponseEntity<Void> incrementarStock(
+            @RequestBody IncrementoStockRequest request) {
+        respuestoServiceiImp.incrementarStock(request.getIdRepuesto(), request.getCantidad());
+        return ResponseEntity.ok().build();
     }
 
 }

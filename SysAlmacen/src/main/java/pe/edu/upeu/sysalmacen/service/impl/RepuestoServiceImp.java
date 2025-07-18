@@ -119,4 +119,22 @@ public class RepuestoServiceImp extends CrudGenericoServiceImp<Repuesto, Long> i
         }
     }
 
+    @Transactional
+    public void incrementarStock(Long idRepuesto, int cantidad) {
+        if (cantidad <= 0) {
+            throw new IllegalArgumentException("La cantidad debe ser positiva");
+        }
+
+        Repuesto repuesto = repo.findById(idRepuesto)
+                .orElseThrow(() -> new EntityNotFoundException("Repuesto no encontrado"));
+
+        int nuevoStock = repuesto.getStockActual() + cantidad;
+        if(nuevoStock < 0) {
+            throw new IllegalStateException("El stock no puede ser negativo");
+        }
+
+        repuesto.setStockActual(nuevoStock);
+        repo.save(repuesto);
+    }
+
 }
