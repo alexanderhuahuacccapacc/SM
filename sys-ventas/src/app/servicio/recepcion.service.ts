@@ -3,7 +3,7 @@ import { GenericService } from './generic.service';
 import { Recepcion } from '../modelo/Recepcion';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../environments/environment';
-import { BehaviorSubject, Subject } from 'rxjs';
+import {BehaviorSubject, Observable, Subject} from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -17,7 +17,7 @@ export class RecepcionService extends GenericService<Recepcion> {
     super(http, `${environment.HOST}/api/recepciones`);
   }
 
-  
+
   setRecepcionChange(data: Recepcion[]) {
     this.recepcionChange.next(data);
   }
@@ -26,7 +26,7 @@ export class RecepcionService extends GenericService<Recepcion> {
     return this.recepcionChange.asObservable();
   }
 
-  
+
   setMessageChange(message: string) {
     this.messageChange.next(message);
   }
@@ -35,9 +35,13 @@ export class RecepcionService extends GenericService<Recepcion> {
     return this.messageChange.asObservable();
   }
 
-  
+
   validarRecepcion(id: number) {
-    return this.http.post(`${this.url}/${id}/validar`, {});
+    return this.http.put(`${this.url}/${id}/validar`, {});
+  }
+
+  cambiarEstado(id: number, estado: string) {
+    return this.http.patch(`${this.url}/${id}/estado`, { estado });
   }
 }
 

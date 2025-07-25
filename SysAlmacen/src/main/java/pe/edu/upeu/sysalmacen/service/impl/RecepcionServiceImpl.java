@@ -1,5 +1,6 @@
 package pe.edu.upeu.sysalmacen.service.impl;
 
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -13,6 +14,7 @@ import pe.edu.upeu.sysalmacen.service.RecepcionService;
 import pe.edu.upeu.sysalmacen.service.StockService;
 
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 
 @Service
@@ -95,6 +97,30 @@ public class RecepcionServiceImpl implements RecepcionService {
                     recepcion.getCantidadRecibida()
             );
         }
+    }
+    @Override
+    public void cambiarEstado(Long id, String nuevoEstado) {
+        Recepcion recepcion = recepcionRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Recepción no encontrada con ID: " + id));
+
+        // Validar transición de estados
+        if (!validarTransicionEstado(recepcion.getEstado(), nuevoEstado)) {
+            throw new IllegalStateException("Transición de estado no permitida");
+        }
+
+        recepcion.setEstado(nuevoEstado);
+        recepcionRepository.save(recepcion);
+    }
+    private boolean validarTransicionEstado(String estadoActual, String nuevoEstado) {
+        // Lógica de validación de transiciones de estado
+        Map<String, List<String>> transicionesPermitidas = Map.of(
+                "PENDIENTE", List.of("RECIBIDO", "VALIDADA"),
+                "RECIBIDO", List.of("VALIDADA"),
+                "VALIDADA", List.of()
+        );
+
+        return transicionesPermitidas.getOrDefault(estadoActual, List.of())
+                .contains(nuevoEstado);
     }
 }
 

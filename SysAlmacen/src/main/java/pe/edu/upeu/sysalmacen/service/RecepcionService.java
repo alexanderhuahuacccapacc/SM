@@ -11,5 +11,6 @@ public interface RecepcionService {
     RecepcionDTO guardarRecepcion(RecepcionDTO dto);
     RecepcionDTO actualizarRecepcion(Long id, RecepcionDTO dto);
     void eliminarRecepcion(Long id);
+    void cambiarEstado(Long id, String nuevoEstado);
     void validarRecepcion(Long id);
 }

@@ -1,23 +1,23 @@
 import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import {
+  FormBuilder,
   FormControl,
   FormGroup,
   FormsModule,
   ReactiveFormsModule,
   Validators
 } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
+import {ActivatedRoute, Router, RouterLink} from '@angular/router';
 import { Recepcion } from '../../../modelo/Recepcion';
 import { RecepcionService } from '../../../servicio/recepcion.service';
 import { RepuestoService } from '../../../servicio/repuesto.service';
-import { switchMap, map, startWith } from 'rxjs/operators';
-import { Observable } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { MaterialModule } from '../../../material/material.module';
 import { MatDatepicker, MatDatepickerInput, MatDatepickerToggle } from '@angular/material/datepicker';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { Repuesto } from '../../../modelo/Repuesto';
 import {provideNativeDateAdapter} from '@angular/material/core';
+import {MatSnackBar} from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-form-recepcion',
@@ -30,131 +30,120 @@ import {provideNativeDateAdapter} from '@angular/material/core';
     MatDatepickerInput,
     MatDatepickerToggle,
     MatDatepicker,
-    MatAutocompleteModule
+    MatAutocompleteModule,
+    RouterLink
   ],
   providers: [provideNativeDateAdapter()],
   templateUrl: './form-recepcion.component.html',
   styleUrls: ['./form-recepcion.component.css']
 })
 export class FormRecepcionComponent implements OnInit {
-  form!: FormGroup;
-  isEdit: boolean = false;
-  id!: number;
-
+  form: FormGroup;
+  isEdit = false;
+  id?: number;
   repuestos: Repuesto[] = [];
-  filteredRepuestos!: Observable<Repuesto[]>;
-  repuestoControl = new FormControl('', [Validators.required]);
-
-  @Output() formularioCerrado = new EventEmitter<void>();
 
   constructor(
+    private fb: FormBuilder,
+    private route: ActivatedRoute,
+    private router: Router,
     private recepcionService: RecepcionService,
     private repuestoService: RepuestoService,
-    private router: Router,
-    private route: ActivatedRoute
-  ) {}
+    private snackBar: MatSnackBar
+  ) {
+    this.form = this.fb.group({
+      repuesto: ['', Validators.required],
+      cantidadRecibida: [0, [Validators.required, Validators.min(1)]],
+      proveedor: ['', Validators.required],
+      codigo: ['', Validators.required],
+      fechaRecepcion: [new Date(), Validators.required],
+      estado: ['PENDIENTE', Validators.required]
+    });
+  }
 
   ngOnInit(): void {
-    console.log('Inicializando FormRecepcionComponent');
-    this.form = new FormGroup({
-      id: new FormControl(null),
-      repuesto: new FormControl(null, [Validators.required]),
-      repuestoNombre: this.repuestoControl,
-      cantidadRecibida: new FormControl(0, [Validators.required]),
-      proveedor: new FormControl('', [Validators.required]),
-      codigo: new FormControl('', [Validators.required]),
-      fechaRecepcion: new FormControl(new Date(), [Validators.required]),
-      estado: new FormControl('', [Validators.required])
-    });
-
-    this.repuestoService.findAll().subscribe((data: Repuesto[]) => {
-      this.repuestos = data;
-
-      this.filteredRepuestos = this.repuestoControl.valueChanges.pipe(
-        startWith(''),
-        map(value => this._filterRepuestos(value || ''))
-      );
-    });
+    this.loadRepuestos();
 
     this.route.params.subscribe(params => {
-      console.log('Params recibidos:', params);
       this.id = params['id'];
-      this.isEdit = !!this.id;
-      console.log(`Modo edición: ${this.isEdit}, ID: ${this.id}`);
-
-      if (this.isEdit) {
-        this.initForm();
+      if (this.id) {
+        this.isEdit = true;
+        this.loadRecepcion(this.id);
       }
     });
   }
 
-  private _filterRepuestos(value: string): Repuesto[] {
-    const filterValue = typeof value === 'string' ? value.toLowerCase() : '';
-    return this.repuestos
-      .filter(repuesto => repuesto.nombre.toLowerCase().includes(filterValue))
-      .sort((a, b) => a.nombre.localeCompare(b.nombre));
-  }
-
-  seleccionarRepuesto(repuesto: Repuesto): void {
-    this.form.patchValue({
-      repuesto: repuesto.idRepuesto,
-      repuestoNombre: repuesto.nombre
+  loadRepuestos(): void {
+    this.repuestoService.findAll().subscribe({
+      next: (data) => this.repuestos = data,
+      error: (err) => this.showError('Error al cargar repuestos')
     });
   }
 
-  displayRepuesto(repuesto?: Repuesto): string {
-    return repuesto ? `${repuesto.nombre} (Stock: ${repuesto.stockActual})` : '';
+  loadRecepcion(id: number): void {
+    this.recepcionService.findById(id).subscribe({
+      next: (data) => this.form.patchValue(data),
+      error: (err) => this.showError('Error al cargar recepción')
+    });
   }
 
-  initForm() {
-    this.recepcionService.findById(this.id).subscribe({
-      next: (data: Recepcion) => {
-        const repuestoSeleccionado = this.repuestos.find(r => r.idRepuesto === data.idRepuesto);
+  onSubmit(): void {
+    if (this.form.valid) {
+      const formValues = this.form.value;
+      const repuestoSeleccionado = this.repuestos.find(r => r.idRepuesto === formValues.repuesto);
 
-        this.form.setValue({
-          id: data.id,
-          repuesto: data.idRepuesto,
-          repuestoNombre: repuestoSeleccionado ? this.displayRepuesto(repuestoSeleccionado) : '',
-          cantidadRecibida: data.cantidadRecibida,
-          proveedor: data.proveedor,
-          codigo: data.codigo,
-          fechaRecepcion: new Date(data.fechaRecepcion),
-          estado: data.estado
-        });
-      },
-      error: (err) => {
-        console.error('Error al cargar recepción:', err);
+      if (!repuestoSeleccionado) {
+        this.showError('Debe seleccionar un repuesto válido');
+        return;
+      }
+
+      const recepcion = new Recepcion(
+        this.isEdit ? this.id ?? null : null,
+        repuestoSeleccionado.idRepuesto, // idRepuesto (número)
+        repuestoSeleccionado.nombre,     // repuesto (string)
+        formValues.cantidadRecibida,
+        formValues.proveedor,
+        formValues.codigo,
+        formValues.fechaRecepcion,
+        formValues.estado || 'PENDIENTE'
+      );
+
+      const operation = this.isEdit
+        ? this.recepcionService.update(recepcion.id!, recepcion)
+        : this.recepcionService.save(recepcion);
+
+      operation.subscribe({
+        next: () => {
+          this.showSuccess(this.isEdit ? 'Recepción actualizada' : 'Recepción creada');
+          this.router.navigate(['/pages/recepcion']);
+        },
+        error: (err) => {
+          console.error('Error detallado:', err);
+          this.showError(err.error?.message || 'Error al guardar recepción');
+        }
+      });
+    } else {
+      this.markFormGroupTouched(this.form);
+    }
+  }
+
+  private markFormGroupTouched(formGroup: FormGroup) {
+    Object.values(formGroup.controls).forEach(control => {
+      control.markAsTouched();
+
+      if (control instanceof FormGroup) {
+        this.markFormGroupTouched(control);
       }
     });
   }
 
-  operate() {
-    const recepcion: Recepcion = {
-      ...this.form.value,
-      idRepuesto: this.form.value.repuesto,
-      fechaRecepcion: this.form.value.fechaRecepcion.toISOString().split('T')[0]
-    };
-
-    const operation = this.isEdit
-      ? this.recepcionService.update(this.id, recepcion)
-      : this.recepcionService.save(recepcion);
-
-    operation.pipe(
-      switchMap(() => this.recepcionService.findAll())
-    ).subscribe({
-      next: (data: Recepcion[]) => {
-        this.recepcionService.setRecepcionChange(data);
-        this.recepcionService.setMessageChange(this.isEdit ? 'Actualizado correctamente' : 'Creado correctamente');
-        this.formularioCerrado.emit();
-        this.router.navigate(['/pages/recepcion']);
-      },
-      error: (err) => {
-        console.error('Error en la operación:', err);
-      }
-    });
+  private showSuccess(message: string): void {
+    this.snackBar.open(message, 'Cerrar', { duration: 3000 });
   }
 
-  get f() {
-    return this.form.controls;
+  private showError(message: string): void {
+    this.snackBar.open(message, 'Cerrar', { duration: 3000 });
   }
 }
+
+

@@ -20,6 +20,9 @@ import { RecepcionService } from '../../servicio/recepcion.service';
 import { RepuestoService } from '../../servicio/repuesto.service';
 import { SalidaService } from '../../servicio/salida.service';
 import { Salida } from '../../modelo/Salida';
+import {ConfirmDialogComponent} from '../../shared/confirm-dialog/confirm-dialog.component';
+import {MatDialog} from '@angular/material/dialog';
+import {MatSnackBar} from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-main-recepcion',
@@ -64,19 +67,13 @@ export class MainRecepcionComponent implements OnInit {
     private recepcionService: RecepcionService,
     private repuestoService: RepuestoService,
     private salidaService: SalidaService,
+    private dialog: MatDialog,
+    private snackBar: MatSnackBar,
     private router: Router
   ) {}
 
   ngOnInit(): void {
-    this.repuestoService.findAll().subscribe((reps: Repuesto[]) => {
-      this.repuestos = reps;
-      this.listarRecepciones();
-    });
-    this.recepcionService.getRecepcionChange().subscribe(data => {
-      this.dataSource.data = data;
-      this.dataSource.paginator = this.paginator;
-      this.dataSource.sort = this.sort;
-    });
+    this.loadRecepciones();
   }
 
   listarRecepciones() {
@@ -97,44 +94,80 @@ export class MainRecepcionComponent implements OnInit {
     this.dataSource.filter = filterValue;
   }
 
-  delete(id: number) {
-    this.recepcionService.delete(id).subscribe(() => {
-      this.listarRecepciones();
+  validarRecepcion(id: number): void {
+    this.recepcionService.validarRecepcion(id).subscribe({
+      next: () => {
+        this.showSuccess('Recepción validada correctamente');
+        this.loadRecepciones();
+      },
+      error: (err) => this.showError('Error al validar recepción')
     });
   }
 
-  validar(id: number) {
-    this.recepcionService.validarRecepcion(id).subscribe(() => {
-      this.listarRecepciones();
+  cambiarEstado(id: number, estado: string): void {
+    this.recepcionService.cambiarEstado(id, estado).subscribe({
+      next: () => {
+        this.showSuccess(`Estado cambiado a ${estado}`);
+        this.loadRecepciones();
+      },
+      error: (err) => this.showError('Error al cambiar estado')
     });
   }
 
-  enviarASalida(row: Recepcion) {
-    const nuevaSalida: Omit<Salida, 'id'> = {
-      idRepuesto: row.idRepuesto!,
-      cantidadEntregada: row.cantidadRecibida,
-      destinatario: 'SIN DESTINATARIO',
-      codigo: row.codigo,
-      fechaSalida: new Date(),
-      estado: 'ENTREGADO'
-    };
+  deleteRecepcion(id: number): void {
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      data: '¿Está seguro de eliminar esta recepción?'
+    });
 
-    this.salidaService.guardar(nuevaSalida).subscribe(() => {
-      // ⚠️ QUITAR ESTE INCREMENTO AQUÍ
-      // this.repuestoService.incrementarStock(row.idRepuesto!, row.cantidadRecibida).subscribe(() => {
-      //   this.repuestoService.setMessageChange('Stock actualizado correctamente');
-      // });
-
-      this.recepcionService.delete(row.id!).subscribe(() => {
-        this.listarRecepciones();
-
-        this.salidaService.findAll().subscribe(data => {
-          this.salidaService.setEntidadChange(data);
-          this.salidaService.setMessageChange('Movido a salida correctamente');
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.recepcionService.delete(id).subscribe({
+          next: () => {
+            this.showSuccess('Recepción eliminada');
+            this.loadRecepciones();
+          },
+          error: (err) => this.showError('Error al eliminar recepción')
         });
-      });
+      }
     });
   }
+
+  private showSuccess(message: string): void {
+    this.snackBar.open(message, 'Cerrar', {
+      duration: 3000,
+      panelClass: ['success-snackbar']
+    });
+  }
+
+  private showError(message: string): void {
+    this.snackBar.open(message, 'Cerrar', {
+      duration: 3000,
+      panelClass: ['error-snackbar']
+    });
+  }
+  loadRecepciones(): void {
+    this.recepcionService.findAll().subscribe({
+      next: (data) => {
+        this.dataSource.data = data;
+        this.dataSource.paginator = this.paginator;
+        this.dataSource.sort = this.sort;
+      },
+      error: (err) => this.showError('Error al cargar recepciones')
+    });
+  }
+  getEstadoColor(estado: string): 'primary' | 'accent' | 'warn' | undefined {
+    switch (estado.toLowerCase()) {
+      case 'pendiente':
+        return 'warn';
+      case 'en proceso':
+        return 'accent';
+      case 'finalizado':
+        return 'primary';
+      default:
+        return undefined;
+    }
+  }
+
 }
 
 
