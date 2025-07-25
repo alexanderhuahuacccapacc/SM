@@ -2,7 +2,7 @@ export class Recepcion {
   constructor(
     public id: number | null = null,
     public idRepuesto: number | null = null,
-    public repuesto: string ,
+    public repuesto: string = '',
     public cantidadRecibida: number = 0,
     public proveedor: string = '',
     public codigo: string = '',

@@ -19,7 +19,6 @@ import { Repuesto } from '../../modelo/Repuesto';
 import { RecepcionService } from '../../servicio/recepcion.service';
 import { RepuestoService } from '../../servicio/repuesto.service';
 import { SalidaService } from '../../servicio/salida.service';
-import { Salida } from '../../modelo/Salida';
 import {ConfirmDialogComponent} from '../../shared/confirm-dialog/confirm-dialog.component';
 import {MatDialog} from '@angular/material/dialog';
 import {MatSnackBar} from '@angular/material/snack-bar';
@@ -74,13 +73,11 @@ export class MainRecepcionComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadRecepciones();
+    this.loadRepuestos();
   }
-
-  listarRecepciones() {
-    this.recepcionService.findAll().subscribe(data => {
-      this.dataSource.data = data;
-      this.dataSource.paginator = this.paginator;
-      this.dataSource.sort = this.sort;
+  loadRepuestos() {
+    this.repuestoService.findAll().subscribe(repuestos => {
+      this.repuestos = repuestos;
     });
   }
 
