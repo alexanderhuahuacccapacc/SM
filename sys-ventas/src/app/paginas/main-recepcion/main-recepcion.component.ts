@@ -13,7 +13,6 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { RouterModule, Router } from '@angular/router';
 import { DatePipe, CommonModule } from '@angular/common';
-
 import { Recepcion } from '../../modelo/Recepcion';
 import { Repuesto } from '../../modelo/Repuesto';
 import { RecepcionService } from '../../servicio/recepcion.service';

@@ -52,6 +52,7 @@ public class RecepcionServiceImpl implements RecepcionService {
         return recepcionMapper.toDto(saved);
     }
 
+
     @Override
     public RecepcionDTO actualizarRecepcion(Long id, RecepcionDTO recepcionDTO) {
         Recepcion existente = recepcionRepository.findById(id)
@@ -61,15 +62,27 @@ public class RecepcionServiceImpl implements RecepcionService {
         Repuesto repuesto = repuestoRepository.findById(recepcionDTO.getIdRepuesto())
                 .orElseThrow(() -> new NoSuchElementException("Repuesto no encontrado con id: " + recepcionDTO.getIdRepuesto()));
 
+        // Guardar el estado anterior para comparación
+        String estadoAnterior = existente.getEstado();
+
         // Actualizar los campos
         existente.setCantidadRecibida(recepcionDTO.getCantidadRecibida());
         existente.setCodigo(recepcionDTO.getCodigo());
         existente.setEstado(recepcionDTO.getEstado());
         existente.setFechaRecepcion(recepcionDTO.getFechaRecepcion());
         existente.setProveedor(recepcionDTO.getProveedor());
-        existente.setRepuesto(repuesto); // aquí sí se actualiza correctamente el repuesto
+        existente.setRepuesto(repuesto);
 
         Recepcion actualizado = recepcionRepository.save(existente);
+
+        // Solo actualizar stock si el estado cambió a VALIDADA
+        if("VALIDADA".equals(recepcionDTO.getEstado()) && !"VALIDADA".equals(estadoAnterior)) {
+            stockService.incrementarStock(
+                    actualizado.getRepuesto().getIdRepuesto(),
+                    actualizado.getCantidadRecibida()
+            );
+        }
+
         return recepcionMapper.toDto(actualizado);
     }
 
